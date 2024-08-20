@@ -1,3 +1,4 @@
+import TelegramBot from "node-telegram-bot-api";
 export const tgBotService = () => {
     const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
     bot.onText(/\/start/, (msg) => {

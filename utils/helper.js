@@ -1,3 +1,4 @@
+
 import logErrors from "./logErrors.js";
 
 export const catchAsync = function (fn) {
@@ -71,39 +72,73 @@ export const getNextRank = (points) => {
     }
 };
 
+export const increaseClicker = [1, 1, 1, 1, 1, 1];
 export const energyIncreasePoints = [100, 250, 500, 1000, 2500, 5000];
 
 
-export const increaseClicker = [1, 1, 1, 1, 1, 1];
 
-export const getEnergyIncreaseForLevel = (level) => {
-    if (level < 0 || level >= energyIncreasePoints.length) {
-        return {
-            energyIncrease: null,
-            message: "Invalid level. Please provide a valid level within the range.",
-        };
+
+// Function to update levels to true up to the given level
+export const updateMultitapArray = (level) => {
+    let multitapArray = [false, false, false, false, false, false];
+    for (let i = 0; i <= level; i++) {
+        if (i >= 0 && i < multitapArray.length) {
+            multitapArray[i] = true;
+        }
+    }
+
+    return multitapArray;
+};
+
+export const getEnergyIncreaseForLevel = (currentEnergy) => {
+    const initialEnergy = 250;
+    let totalEnergy = initialEnergy;
+
+    for (let i = 0; i < energyIncreasePoints.length; i++) {
+        totalEnergy += energyIncreasePoints[i];
+        if (currentEnergy < totalEnergy) {
+            return {
+                sucess:true,
+                nextEnergy: totalEnergy,
+                energyIncrease: energyIncreasePoints[i],
+                level:i,
+                message: `Next energy increase is ${energyIncreasePoints[i]} for a total of ${totalEnergy} energy.`,
+            };
+        }
     }
 
     return {
-        level,
-        energyIncrease: energyIncreasePoints[level],
+        sucess:false,
+        nextEnergy: null,
+        energyIncrease: null,
+        message: "Max level reached. No further energy increases.",
     };
 };
 
-export const getClickerIncreaseForLevel = (level) => {
-    if (level < 0 || level >= energyIncreasePoints.length) {
-        return {
-            energyIncrease: null,
-            message: "Invalid level. Please provide a valid level within the range.",
-        };
+
+export const getClickerIncreaseForLevel = (currentPoint) => {
+    const initialPoint = 1;
+    let totalPoint = initialPoint;
+
+    for (let i = 0; i < increaseClicker.length; i++) {
+        totalPoint += increaseClicker[i];
+        if (currentPoint < totalPoint) {
+            return {
+                sucess:true,
+                level:i,
+                totalPoint: totalPoint,
+                balanceToDeduct: energyIncreasePoints[i],
+                message: ``,
+            };
+        }
     }
 
     return {
-        
-        level,
-        BalanceToDeduct: energyIncreasePoints[level],
-
+        sucess:false,
+        nextEnergy: null,
+        energyIncrease: null,
+        message: "Max level reached. No further points increases.",
     };
 };
 
-console.log("l", getEnergyIncreaseForLevel(0))
+console.log("l", getClickerIncreaseForLevel(1))

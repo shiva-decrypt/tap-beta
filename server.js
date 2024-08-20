@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import databaseConnection from './database/db.js';
 import botRoute from "./routes/bot.routes.js"
+import { tgBotService } from './services/bot.services.js';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ app.use("/bot", botRoute)
 const PORT = process.env.PORT || 4003;
 databaseConnection(() => {
     app.listen(PORT, () => {
-        // tgBotService()
+        tgBotService()
         console.log(`server listening on port ${PORT}`);
     });
 });

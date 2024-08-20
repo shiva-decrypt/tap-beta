@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import { catchAsync, getEnergyIncreaseForLevel, getNextRank, httpStatus, responseObject } from "../utils/helper.js";
+import { catchAsync, getClickerIncreaseForLevel, getEnergyIncreaseForLevel, getNextRank, httpStatus, responseObject, updateMultitapArray } from "../utils/helper.js";
 
 const login = catchAsync(async (req, res) => {
     const {
@@ -79,7 +79,7 @@ const UpgradeUserEnergy = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
 
-    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.levelIndex);
+    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.energyCapacity);
 
     if (upcomingUpgradeEnergy.energyIncrease === null) {
         const err = responseObject(false, true, {
@@ -93,8 +93,9 @@ const UpgradeUserEnergy = catchAsync(async (req, res) => {
         });
         return res.status(httpStatus.BAD_REQUEST).json(err);
     }
-    user.energy += upcomingUpgradeEnergy.energyIncrease;
+    user.energyCapacity = upcomingUpgradeEnergy.nextEnergy;
     user.points -= upcomingUpgradeEnergy.energyIncrease;
+    user.energyLimitArray = updateMultitapArray(upcomingUpgradeEnergy.level)
     await user.save()
 
     const response = responseObject(true, false, {
@@ -117,7 +118,7 @@ const UpgradeUserMultiply = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
 
-    const upcomingUpgradeEnergy = getClickerIncreaseForLevel(user.levelIndex);
+    const upcomingUpgradeEnergy = getClickerIncreaseForLevel(user.multitap);
 
     if (upcomingUpgradeEnergy.energyIncrease === null) {
         const err = responseObject(false, true, {
@@ -125,14 +126,16 @@ const UpgradeUserMultiply = catchAsync(async (req, res) => {
         });
         return res.status(httpStatus.BAD_REQUEST).json(err);
     }
-    if (user.points < upcomingUpgradeEnergy.energyIncrease) {
+    if (user.points < upcomingUpgradeEnergy.balanceToDeduct) {
         const err = responseObject(false, true, {
             message: "insufficient balance",
         });
         return res.status(httpStatus.BAD_REQUEST).json(err);
     }
     user.multitap += 1;
-    user.points -= upcomingUpgradeEnergy.energyIncrease;
+    user.points -= upcomingUpgradeEnergy.balanceToDeduct;
+    user.multitapArray = updateMultitapArray(upcomingUpgradeEnergy.level)
+    console.log("user pints", user.points)
     await user.save()
 
     const response = responseObject(true, false, {
@@ -194,6 +197,7 @@ const useFullTank = catchAsync(async (req, res) => {
         await user.save(); // Save the updated user document
 
         const successResponse = responseObject(true, false, {
+            data: user,
             message: "Energy refilled.",
         });
         return res.status(httpStatus.OK).json(successResponse);
@@ -219,13 +223,14 @@ const useMultiplier = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
     const currentTimestamp = Date.now();
-    const previousUsedTimestamp = user.boostTimestamp;
+    const previousUsedTimestamp = user.multiplyTimestamp;
     const twelveHoursInMillis = 12 * 60 * 60 * 1000;
 
     if (currentTimestamp - previousUsedTimestamp >= twelveHoursInMillis) {
         user.multiplyTimestamp = Date.now();
         await user.save();
         const successResponse = responseObject(true, false, {
+            data: user,
             message: "Multiplier started",
         });
         return res.status(httpStatus.OK).json(successResponse);
@@ -276,6 +281,12 @@ const getLeaderBoard = catchAsync(async (req, res) => {
 const clickUpdate = catchAsync(async (req, res) => {
     const { id } = req.userPayload;
     const { clicks } = req.body;
+    if (clicks > 2100) {
+        const err = responseObject(false, true, {
+            message: "bots are not allowed",
+        });
+        return res.status(httpStatus.BAD_REQUEST).json(err);
+    }
     if (!id) {
         const err = responseObject(false, true, {
             message: "empty params",
@@ -376,9 +387,14 @@ const completTask = catchAsync(async (req, res) => {
         if (taskCompleted) {
             user.points += rewardPoints;
             user.completedTasks.push(taskName);
+            const predictedRank = getNextRank(user.points)
+            if (user.levelIndex < predictedRank.currentRank) {
+                user.levelIndex = predictedRank.currentRank
+            }
             await user.save();
             const response = responseObject(true, false, {
-                rewardPoints
+                rewardPoints,
+                user
             });
             return res.status(httpStatus.OK).json(response);
 
@@ -437,11 +453,16 @@ const completeRefferalTask = catchAsync(async () => {
 
             user.points = totalPoints;
             user.referralTasks[taskName] = true
+            const predictedRank = getNextRank(user.points)
+            if (user.levelIndex < predictedRank.currentRank) {
+                user.levelIndex = predictedRank.currentRank
+            }
             // Save updated user data
             await user.save();
 
             const response = responseObject(true, false, {
-                message: `Points added for completing ${taskName}`, points: totalPoints
+                message: `Points added for completing ${taskName}`, points: totalPoints,
+                user
             });
             return res.status(httpStatus.OK).json(response);
 

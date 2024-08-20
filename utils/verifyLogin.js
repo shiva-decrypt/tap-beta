@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { httpStatus } from "./helper.js";
-const TELEGRAM_BOT_TOKEN = "7348203341:AAGEFNyEWz2l4dsJEbE3wwuygV-_9PV7baQ";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_TOKEN;
 
 const validate = (data) => {
     // Data received from Telegram login widget
