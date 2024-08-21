@@ -15,7 +15,7 @@ app.use("/bot", botRoute)
 const PORT = process.env.PORT || 4003;
 databaseConnection(() => {
     app.listen(PORT, () => {
-        // tgBotService()
+        tgBotService()
         console.log(`server listening on port ${PORT}`);
     });
 });
