@@ -325,6 +325,7 @@ const clickUpdate = catchAsync(async (req, res) => {
     await user.save();
     const response = responseObject(true, false, {
         data: coins,
+        user:user,
         message: "updated succesfully",
     });
     return res.status(httpStatus.OK).json(response);
