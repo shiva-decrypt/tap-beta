@@ -36,7 +36,6 @@ const login = catchAsync(async (req, res) => {
                     user.points = 250
                     referrer.invitedFriends.push(user._id);
                     referrer.points = (referrer.points || 0) + 250;
-                    console.log("re",referrer)
                     await referrer.save();
                 } else {
 
@@ -82,7 +81,7 @@ const UpgradeUserEnergy = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
 
-    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.energyCapacity);
+    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.energyCapacity , user.levelIndex);
 
     if (upcomingUpgradeEnergy.energyIncrease === null) {
         const err = responseObject(false, true, {
@@ -121,7 +120,7 @@ const UpgradeUserMultiply = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
 
-    const upcomingUpgradeEnergy = getClickerIncreaseForLevel(user.multitap);
+    const upcomingUpgradeEnergy = getClickerIncreaseForLevel(user.multitap, user.levelIndex);
 
     if (upcomingUpgradeEnergy.energyIncrease === null) {
         const err = responseObject(false, true, {
@@ -129,7 +128,7 @@ const UpgradeUserMultiply = catchAsync(async (req, res) => {
         });
         return res.status(httpStatus.BAD_REQUEST).json(err);
     }
-    if (user.points < upcomingUpgradeEnergy.balanceToDeduct) {
+    if (user.points <= upcomingUpgradeEnergy.balanceToDeduct) {
         const err = responseObject(false, true, {
             message: "insufficient balance",
         });
@@ -328,7 +327,7 @@ const clickUpdate = catchAsync(async (req, res) => {
     await user.save();
     const response = responseObject(true, false, {
         data: coins,
-        user:user,
+        user: user,
         message: "updated succesfully",
     });
     return res.status(httpStatus.OK).json(response);

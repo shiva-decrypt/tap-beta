@@ -90,25 +90,38 @@ export const updateMultitapArray = (level) => {
     return multitapArray;
 };
 
-export const getEnergyIncreaseForLevel = (currentEnergy) => {
+export const getEnergyIncreaseForLevel = (currentEnergy, userCurrentlevel) => {
     const initialEnergy = 250;
     let totalEnergy = initialEnergy;
 
     for (let i = 0; i < energyIncreasePoints.length; i++) {
         totalEnergy += energyIncreasePoints[i];
         if (currentEnergy < totalEnergy) {
-            return {
-                sucess:true,
-                nextEnergy: totalEnergy,
-                energyIncrease: energyIncreasePoints[i],
-                level:i,
-                message: `Next energy increase is ${energyIncreasePoints[i]} for a total of ${totalEnergy} energy.`,
-            };
+
+            if (i <= userCurrentlevel) {
+
+                return {
+                    sucess: true,
+                    nextEnergy: totalEnergy,
+                    energyIncrease: energyIncreasePoints[i],
+                    level: i,
+                    message: `Next energy increase is ${energyIncreasePoints[i]} for a total of ${totalEnergy} energy.`,
+                };
+            } else {
+
+                return {
+                    sucess: false,
+                    nextEnergy: null,
+                    energyIncrease: null,
+                    message: "Max level reached. No further energy increases.",
+                };
+            }
+
         }
     }
 
     return {
-        sucess:false,
+        sucess: false,
         nextEnergy: null,
         energyIncrease: null,
         message: "Max level reached. No further energy increases.",
@@ -116,25 +129,34 @@ export const getEnergyIncreaseForLevel = (currentEnergy) => {
 };
 
 
-export const getClickerIncreaseForLevel = (currentPoint) => {
+export const getClickerIncreaseForLevel = (currentPoint, userCurrentlevel) => {
     const initialPoint = 1;
     let totalPoint = initialPoint;
 
     for (let i = 0; i < increaseClicker.length; i++) {
         totalPoint += increaseClicker[i];
         if (currentPoint < totalPoint) {
-            return {
-                sucess:true,
-                level:i,
-                totalPoint: totalPoint,
-                balanceToDeduct: energyIncreasePoints[i],
-                message: ``,
-            };
+            if (i <= userCurrentlevel) {
+                return {
+                    sucess: true,
+                    level: i,
+                    totalPoint: totalPoint,
+                    balanceToDeduct: energyIncreasePoints[i],
+                    message: ``,
+                }
+            } else {
+                return {
+                    sucess: false,
+                    nextEnergy: null,
+                    energyIncrease: null,
+                    message: "Max level reached. No further points increases.",
+                };
+            }
         }
     }
 
     return {
-        sucess:false,
+        sucess: false,
         nextEnergy: null,
         energyIncrease: null,
         message: "Max level reached. No further points increases.",
