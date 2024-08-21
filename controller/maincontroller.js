@@ -8,7 +8,8 @@ const login = catchAsync(async (req, res) => {
         last_name,
         username,
     } = req.userPayload;
-    const { referredBy } = req.body;
+    const { reffralId } = req.body;
+
     if (!id) {
         const err = responseObject(false, true, {
             message: "empty address",
@@ -27,13 +28,15 @@ const login = catchAsync(async (req, res) => {
             lastEnergyUpdate: now,
             referralCode: id,
         });
-        if (referredBy) {
-            const referrer = await User.findById(referredBy);
+        if (reffralId) {
+            const referrer = await User.findById(reffralId);
             if (referrer) {
                 if (!referrer.invitedFriends.includes(user._id)) {
                     user.referredBy = referrer._id;
+                    user.points = 250
                     referrer.invitedFriends.push(user._id);
                     referrer.points = (referrer.points || 0) + 250;
+                    console.log("re",referrer)
                     await referrer.save();
                 } else {
 
