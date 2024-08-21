@@ -357,9 +357,9 @@ const completTask = catchAsync(async (req, res) => {
                 }
                 break;
             case 'join_tg_group':
-                if (!user.joinTghannel) {
+                if (!user.joinTgChannel) {
                     rewardPoints = 250;
-                    user.joinTghannel = true;
+                    user.joinTgChannel = true;
                     taskCompleted = true;
                 }
                 break;
