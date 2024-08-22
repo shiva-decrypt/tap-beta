@@ -81,7 +81,7 @@ const UpgradeUserEnergy = catchAsync(async (req, res) => {
         return res.status(httpStatus.NOT_FOUND).json(err);
     }
 
-    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.energyCapacity , user.levelIndex);
+    const upcomingUpgradeEnergy = getEnergyIncreaseForLevel(user.energyCapacity, user.levelIndex);
 
     if (upcomingUpgradeEnergy.energyIncrease === null) {
         const err = responseObject(false, true, {
@@ -229,7 +229,7 @@ const useMultiplier = catchAsync(async (req, res) => {
     const twelveHoursInMillis = 12 * 60 * 60 * 1000;
 
     if (currentTimestamp - previousUsedTimestamp >= twelveHoursInMillis) {
-        user.multiplyTimestamp = Date.now();
+        user.multiplyTimestamp = currentTimestamp;
         await user.save();
         const successResponse = responseObject(true, false, {
             data: user,
@@ -283,7 +283,7 @@ const getLeaderBoard = catchAsync(async (req, res) => {
 const clickUpdate = catchAsync(async (req, res) => {
     const { id } = req.userPayload;
     const { clicks } = req.body;
-    if (clicks > 2100) {
+    if (clicks > 300) {
         const err = responseObject(false, true, {
             message: "bots are not allowed",
         });
