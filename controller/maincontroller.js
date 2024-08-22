@@ -283,12 +283,12 @@ const getLeaderBoard = catchAsync(async (req, res) => {
 const clickUpdate = catchAsync(async (req, res) => {
     const { id } = req.userPayload;
     const { clicks } = req.body;
-    if (clicks > 300) {
-        const err = responseObject(false, true, {
-            message: "bots are not allowed",
-        });
-        return res.status(httpStatus.BAD_REQUEST).json(err);
-    }
+    // if (clicks > 300) {
+    //     const err = responseObject(false, true, {
+    //         message: "bots are not allowed",
+    //     });
+    //     return res.status(httpStatus.BAD_REQUEST).json(err);
+    // }
     if (!id) {
         const err = responseObject(false, true, {
             message: "empty params",
